@@ -204,6 +204,7 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
             $scope.current_task.setStop();
             TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
         }
+        
     };
     $scope.delete_task = function (cur_task) {
 

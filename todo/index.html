@@ -13,9 +13,7 @@
         <div class="input-group input-group-sm col-xs-8 col-sm-8 col-md-8 col-lg-8" style="margin-top: 5px">
             <input ng-model="task_details" type="text" class="form-control" placeholder="i.e. task name #1.5"
                    ng-keyup="$event.keyCode == 13 ? save_newtask() : null"/>
-            <span class="input-group-btn">
-                <button class="btn btn-default" type="button" ng-click="save_newtask()">Go!</button>
-            </span>
+
         </div>
     </div>
     <div class="row">
@@ -48,7 +46,7 @@
         </div>
     </div>
     <div class="row">
-        <button type="button" class="btn btn btn-default" ng-click="push_to_server">Push To Server</button>
+        <button type="button" class="btn btn btn-default" ng-click="push_to_server()">Push To Server</button>
     </div>
 </div>
 
