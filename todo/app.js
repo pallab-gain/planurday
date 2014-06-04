@@ -9,8 +9,8 @@ function Task(attrs) {
     var name = (attrs && attrs.name) || undefined;
     var total_duration = parseFloat(attrs && attrs.total_duration) || 0;
     var duration_insec = moment.duration(total_duration, 'hours').asSeconds();
-    var duration = duration_insec;
-    var running = false;
+    var duration = attrs.duration || duration_insec;
+    var running = attrs.running || false;
     return {
         getId: function () {
             return id;
@@ -44,6 +44,9 @@ function Task(attrs) {
         updateDuration: function () {
             //1 second kore kore kumaitechi
             duration = duration - 1;
+        },
+        setStop: function () {
+            running = false
         }
     }
 }
@@ -52,7 +55,8 @@ app.factory('TaskList', function ($q) {
     var TaskList = {};
     TaskList.task = [];
     TaskList.addNew = function (attrs) {
-        TaskList.task.push(attrs);
+        //TaskList.task.push(attrs);
+        localStorage.setItem("planurday" + attrs.getId(), JSON.stringify(attrs.getTask()));
     };
     TaskList.newTask = function (task_details) {
         var self = this;
@@ -60,20 +64,22 @@ app.factory('TaskList', function ($q) {
         var _task = new Task({
             'id': moment.utc().valueOf(),
             'name': tmp_task[0],
-            'total_duration': tmp_task[1]
+            'total_duration': tmp_task[1],
+            'running': false
         });
         self.addNew(_task);
     };
     TaskList.getTask = function (task_id) {
-        return _.find(Task.task, function (ele) {
-            return ele.getId() == task_id;
-        })
+        return localStorage["planurday" + task_id];
+    };
+    TaskList.updateTask = function (task_id, with_task) {
+        localStorage.setItem("planurday" + task_id, JSON.stringify(with_task.getTask()));
     };
     TaskList.allTask = function () {
         var d = $q.defer();
         //return TaskList.task;
         //get a list of task
-        var keys;
+        var keys, tmp;
         var raw_data = localStorage;
         var data = [];
         async.series([
@@ -84,8 +90,7 @@ app.factory('TaskList', function ($q) {
                 function (data_callback) {
                     async.each(keys, function (cur_key, each_callback) {
                         if (cur_key.substr(0, 9) === 'planurday') {
-                            console.log(raw_data[cur_key]);
-                            data.push(raw_data[cur_key]);
+                            data.push(new Task(angular.fromJson(raw_data[cur_key])));
                         }
                         each_callback(null);
                     }, function (err) {
@@ -114,7 +119,7 @@ app.factory('TaskList', function ($q) {
                 },
                 function (data_callback) {
                     async.each(keys, function (cur_key, each_callback) {
-                        if (cur_key.substr(0, 10) === 'planurday') {
+                        if (cur_key.substr(0, 9) === 'planurday') {
                             localStorage.removeItem(cur_key);
                         }
                         each_callback(null);
@@ -132,8 +137,6 @@ app.factory('TaskList', function ($q) {
 });
 
 app.controller('planurDay', function ($scope, $interval, TaskList) {
-    //$scope.setInterval = setInterval;
-
     $scope.task_list = undefined;
     TaskList.allTask().then(function () {
         $scope.task_list = TaskList.task;
@@ -151,28 +154,33 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
         });
     };
     $scope.on_listen = function (cur_task) {
-        if (typeof $scope.current_task !== 'undefined') {
-            //previous task ter state sqitch kore dilam
-            $scope.current_task.switchState();
+        if (angular.isDefined(stop)) {
+            $scope.stopInterval();
         }
+        if (angular.isDefined($scope.current_task) && _.isEqual(cur_task, $scope.current_task) === false) {
+            //different task
+            $scope.current_task.setStop();
+            TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        }
+        //same task
         $scope.current_task = cur_task;
         if ($scope.current_task.isDone() === false) {
             $scope.current_task.switchState();
             if ($scope.current_task.isRunning() === true) {
-                if (angular.isDefined(stop)) {
-                    $scope.stopInterval();
-                }
                 stop = $interval(function () {
                     $scope.current_task.updateDuration();
                     $scope.progress_value = $scope.current_task.getComplete();
                     //console.log($scope.current_task.getDuration(), $scope.current_task.getComplete());
                 }, 1000);
             } else {
-                $scope.stopInterval();
+                $scope.current_task.setStop();
+                TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
             }
         } else {
-            $scope.stopInterval();
+            $scope.current_task.setStop();
+            TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
         }
+
     };
 
     $scope.stopInterval = function () {
@@ -181,10 +189,19 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
             stop = undefined;
         }
     };
-
     $scope.$on('$destroy', function () {
         // Make sure that the interval is destroyed too
         $scope.stopInterval();
+        if (typeof $scope.current_task !== 'undefined') {
+            $scope.current_task.setStop();
+            TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        }
     });
-
+    window.onbeforeunload = function (e) {
+        $scope.stopInterval();
+        if (typeof $scope.current_task !== 'undefined') {
+            $scope.current_task.setStop();
+            TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        }
+    }
 });
