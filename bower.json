@@ -1,0 +1,13 @@
+{
+    "name": "planyourday",
+    "version": "0.0.1",
+    "dependencies": {
+        "angular": "latest",
+        "jquery": "latest",
+        "async": "latest",
+        "bootstrap": "latest",
+        "underscore": "latest",
+        "highcharts": "latest",
+        "momentjs": "latest"
+    }
+}

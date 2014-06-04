@@ -1,0 +1,23 @@
+{
+    "name": "planyourday",
+    "description": "Yet another todo apps for me",
+    "version": "0.0.1",
+    "author": {
+        "name": "Xerxes",
+        "email": "pallab.gain@gmail.com"
+    },
+    "script": {
+        "start": "nodemon todoserver.js"
+    },
+    "dependencies": {
+        "jquery": "*",
+        "async": "*",
+        "underscore": "*",
+        "express": "*",
+        "mysql": "*"
+
+    },
+    "engines": {
+        "node": ">= 0.10.0"
+    }
+}
