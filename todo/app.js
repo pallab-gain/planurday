@@ -33,7 +33,7 @@ function Task(attrs) {
             return duration <= 0 ? 100 : ( (100. * baki_ase ) / duration_insec );
         },
         getTask: function () {
-            return {'id': id, 'name': name, 'total_duration': total_duration, 'duration': duration};
+            return {'id': id, 'name': name, 'total_duration': total_duration, 'duration_insec': duration_insec, 'duration': duration, 'running': running};
         },
         switchState: function () {
             running = !running
@@ -43,7 +43,8 @@ function Task(attrs) {
         },
         updateDuration: function () {
             //1 second kore kore kumaitechi
-            duration = duration - 1;
+            duration = Math.max(0, duration - 1);
+
         },
         setStop: function () {
             running = false
@@ -51,7 +52,7 @@ function Task(attrs) {
     }
 }
 
-app.factory('TaskList', function ($q) {
+app.factory('TaskList', function ($http, $q) {
     var TaskList = {};
     TaskList.task = [];
     TaskList.addNew = function (attrs) {
@@ -74,6 +75,18 @@ app.factory('TaskList', function ($q) {
     };
     TaskList.updateTask = function (task_id, with_task) {
         localStorage.setItem("planurday" + task_id, JSON.stringify(with_task.getTask()));
+    };
+    TaskList.toServer = function () {
+        console.log(TaskList.task);
+        var d = $q.defer();
+        var url = 'http://localhost:3000/postdata';
+        $http({'method': 'POST', 'url': url, 'data': { 'values': _.map(TaskList.task, function (cur) {
+            return cur.getTask();
+        })} }).success(function (data, status, headers, config) {
+            TaskList.info = data.result;
+            d.resolve();
+        });
+        return d.promise;
     };
     TaskList.allTask = function () {
         var d = $q.defer();
@@ -204,13 +217,18 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
             $scope.current_task.setStop();
             TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
         }
-        
+        TaskList.toServer().then(function () {
+            //TaskList.removeTasks();
+            TaskList.allTask().then(function () {
+                $scope.task_list = TaskList.task;
+            });
+        })
+
     };
     $scope.delete_task = function (cur_task) {
-
         $scope.stopInterval();
-        $scope.current_task.setStop();
-        TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        cur_task.setStop();
+        TaskList.updateTask(cur_task.getId(), cur_task);
         localStorage.removeItem("planurday" + cur_task.getId());
         TaskList.allTask().then(function () {
             $scope.task_list = TaskList.task;

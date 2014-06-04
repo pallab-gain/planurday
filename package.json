@@ -14,7 +14,7 @@
         "async": "*",
         "underscore": "*",
         "express": "*",
-        "pg": "*",
+        "mysql": "*",
         "body-parser": "*",
         "knex": "*",
         "path": "*"

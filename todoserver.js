@@ -3,7 +3,7 @@
  */
 (function () {
 
-    var express, app, http, route, _, bodyParser, async, Knex, knex,path;
+    var express, app, http, route, _, bodyParser, async, Knex, knex, path;
     path = require('path');
     express = require('express');
     http = require('http');
@@ -13,10 +13,10 @@
     Knex = require('knex');
 
     knex = Knex.initialize({
-        client: 'pg',
+        client: 'mysql',
         connection: {
             host: '127.0.0.1',
-            user: 'openerp',
+            user: 'root',
             password: '',
             database: 'planurday'
         }
@@ -39,8 +39,33 @@
         });
 
 
-    app.route('/gettimespent')
+    app.route('/postdata')
         .post(function (request, response) {
+            async.each(request.body.values, function (item, callback1) {
+                knex('plan').where('id', '=', item.id).then(function (model) {
+                    if (model.length == 0) {
+                        knex('plan').insert([
+                            {'id': item.id, 'name': item.name, 'total_duration': item.total_duration, 'duration_insec': item.duration_insec,
+                                'duration': item.duration, 'running': item.running}
+                        ]).exec(function (data) {
+                            //console.log(data);
+                        });
+                    } else {
+                        knex('plan').where('id', '=', item.id).update({'id': item.id, 'name': item.name, 'total_duration': item.total_duration, 'duration_insec': item.duration_insec,
+                            'duration': item.duration, 'running': item.running}).then(function (garbase) {
+                        })
+                    }
+                    callback1(null);
+                });
+            }, function (err) {
+                if (err) {
+                    return response.send({'err': err, 'result': null});
+                } else {
+                    return response.send({'err': null, 'result': 'success'});
+                }
+            });
+
 
         });
+
 })();
