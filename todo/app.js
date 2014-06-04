@@ -154,6 +154,7 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
         });
     };
     $scope.on_listen = function (cur_task) {
+        //push to server
         if (angular.isDefined(stop)) {
             $scope.stopInterval();
         }
@@ -197,6 +198,23 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
             TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
         }
     });
+    $scope.push_to_server = function () {
+        $scope.stopInterval();
+        if (typeof $scope.current_task !== 'undefined') {
+            $scope.current_task.setStop();
+            TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        }
+    };
+    $scope.delete_task = function (cur_task) {
+
+        $scope.stopInterval();
+        $scope.current_task.setStop();
+        TaskList.updateTask($scope.current_task.getId(), $scope.current_task);
+        localStorage.removeItem("planurday" + cur_task.getId());
+        TaskList.allTask().then(function () {
+            $scope.task_list = TaskList.task;
+        });
+    }
     window.onbeforeunload = function (e) {
         $scope.stopInterval();
         if (typeof $scope.current_task !== 'undefined') {
