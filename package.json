@@ -6,7 +6,7 @@
         "name": "Xerxes",
         "email": "pallab.gain@gmail.com"
     },
-    "script": {
+    "scripts": {
         "start": "nodemon todoserver.js"
     },
     "dependencies": {
@@ -14,8 +14,10 @@
         "async": "*",
         "underscore": "*",
         "express": "*",
-        "mysql": "*"
-
+        "pg": "*",
+        "body-parser": "*",
+        "knex": "*",
+        "path": "*"
     },
     "engines": {
         "node": ">= 0.10.0"
