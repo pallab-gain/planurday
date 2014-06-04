@@ -167,7 +167,7 @@ app.controller('planurDay', function ($scope, $interval, TaskList) {
         $scope.current_task = cur_task;
         if ($scope.current_task.isDone() === false) {
             $scope.current_task.switchState();
-            if ($scope.current_task.isRunning() === true) {
+            if ($scope.current_task.isRunning() === true && $scope.current_task.isDone() === false) {
                 stop = $interval(function () {
                     $scope.current_task.updateDuration();
                     $scope.progress_value = $scope.current_task.getComplete();

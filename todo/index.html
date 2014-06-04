@@ -10,7 +10,7 @@
 
 <div class="container">
     <div class="row" ng-show="set_newtask">
-        <div class="input-group input-group-sm col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-top: 5px">
+        <div class="input-group input-group-sm col-xs-8 col-sm-8 col-md-8 col-lg-8" style="margin-top: 5px">
             <input ng-model="task_details" type="text" class="form-control" placeholder="i.e. task name #1.5"
                    ng-keyup="$event.keyCode == 13 ? save_newtask() : null"/>
             <span class="input-group-btn">
@@ -20,7 +20,8 @@
     </div>
     <div class="row">
         <div class="list-group">
-            <a href="#" class="list-group-item active" ng-repeat="cur_task in task_list track by $index"
+            <a href="#" class="list-group-item active col-xs-8 col-sm-8 col-md-8 col-lg-8"
+               ng-repeat="cur_task in task_list track by $index"
                style="margin-top: 5px">
                 <h4 class="list-group-item-heading">
                     <span ng-show="cur_task.isRunning()===false" class="glyphicon glyphicon-play-circle"
